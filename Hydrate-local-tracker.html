@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hydrate — Water Tracker</title>
+<style>
+  *{box-sizing:border-box}
+
+  :root{
+    --blue:#29b6f6;
+    --blue-dark:#0288d1;
+    --ink:#0b3550;
+    --muted:#5d7f96;
+    --card-shadow:0 10px 30px rgba(11,53,80,.08);
+  }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    padding:32px 16px 48px;
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    background:linear-gradient(160deg,#e1f5fe 0%,#f4fbff 55%,#eaf6ff 100%);
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+  }
+
+  .app{
+    width:100%;
+    max-width:420px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+
+  /* ---------- header ---------- */
+  .head{text-align:center;margin-bottom:2px}
+  .head h1{margin:0;font-size:26px;letter-spacing:-.02em}
+  .head p{margin:6px 0 0;color:var(--muted);font-size:14px}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:#fff;
+    border:1px solid rgba(41,182,246,.12);
+    border-radius:20px;
+    padding:22px;
+    box-shadow:var(--card-shadow);
+  }
+  .card h2{
+    margin:0 0 8px;
+    font-size:16px;
+    letter-spacing:-.01em;
+  }
+  .muted{color:var(--muted);font-size:13.5px;line-height:1.5;margin:0 0 14px}
+  .small{font-size:12px;margin:10px 0 0}
+
+  /* ---------- progress ring ---------- */
+  .ring-wrap{
+    position:relative;
+    width:200px;
+    height:200px;
+    margin:4px auto 20px;
+  }
+  .ring{
+    width:200px;
+    height:200px;
+    display:block;
+    transform:rotate(-90deg);
+  }
+  .ring-bg{
+    fill:none;
+    stroke:#e3f2fd;
+    stroke-width:10;
+  }
+  .ring-fill{
+    fill:none;
+    stroke:var(--blue);
+    stroke-width:10;
+    stroke-linecap:round;
+    stroke-dasharray:326.726;
+    stroke-dashoffset:326.726;
+    transition:stroke-dashoffset .55s cubic-bezier(.4,0,.2,1);
+  }
+  .ring-label{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    pointer-events:none;
+  }
+  .ring-label span{font-size:46px;font-weight:700;line-height:1}
+  .ring-label small{color:var(--muted);font-size:13px;margin-top:6px}
+
+  /* ---------- counter buttons ---------- */
+  .controls{display:flex;justify-content:center;gap:18px}
+  .btn-round{
+    width:60px;height:60px;
+    border:none;border-radius:50%;
+    background:#eaf6ff;
+    color:var(--blue-dark);
+    font-size:28px;line-height:1;
+    display:grid;place-items:center;
+    cursor:pointer;
+    transition:transform .15s,background .15s,box-shadow .15s;
+  }
+  .btn-round:hover{background:#d8eefc}
+  .btn-round:active{transform:scale(.93)}
+  .btn-round.primary{
+    background:linear-gradient(180deg,#4fc3f7,#2196f3);
+    color:#fff;
+    box-shadow:0 8px 20px rgba(33,150,243,.35);
+  }
+  .btn-round.primary:hover{background:linear-gradient(180deg,#45bdf5,#1b8ce8)}
+  .btn-round:disabled{opacity:.35;cursor:not-allowed}
+
+  .hint{
+    text-align:center;
+    color:var(--muted);
+    font-size:13.5px;
+    margin:16px 0 0;
+    min-height:20px;
+  }
+
+  .link-btn{
+    display:block;
+    margin:10px auto 0;
+    background:none;border:none;
+    color:var(--muted);
+    font:inherit;font-size:12.5px;
+    text-decoration:underline;
+    cursor:pointer;
+    padding:4px;
+  }
+  .link-btn:hover{color:var(--blue-dark)}
+
+  /* ---------- form controls ---------- */
+  .calc-row{display:flex;gap:10px}
+  .calc-row input{flex:1;min-width:0}
+
+  input[type=number],select{
+    font:inherit;
+    color:inherit;
+    padding:11px 14px;
+    border:1px solid #cfe8f7;
+    border-radius:12px;
+    background:#f8fdff;
+    outline:none;
+    transition:border-color .15s,box-shadow .15s;
+  }
+  input[type=number]:focus,select:focus{
+    border-color:var(--blue);
+    box-shadow:0 0 0 3px rgba(41,182,246,.18);
+  }
+  input[type=number]{-moz-appearance:textfield}
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+
+  .btn{
+    border:none;
+    border-radius:12px;
+    padding:11px 18px;
+    background:linear-gradient(180deg,#4fc3f7,#2196f3);
+    color:#fff;
+    font:inherit;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    box-shadow:0 6px 16px rgba(33,150,243,.3);
+    transition:transform .15s,box-shadow .15s;
+  }
+  .btn:hover{box-shadow:0 8px 20px rgba(33,150,243,.4)}
+  .btn:active{transform:scale(.97)}
+
+  .result{
+    margin:14px 0 0;
+    font-size:13.5px;
+    line-height:1.55;
+    color:var(--ink);
+    min-height:1px;
+  }
+  .result.warn{color:#c62828}
+
+  .reminder-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    font-size:14px;
+  }
+  .reminder-row select{flex:0 0 auto}
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:28px;
+    transform:translate(-50%,20px);
+    max-width:90vw;
+    padding:12px 18px;
+    border-radius:14px;
+    background:#0b3550;
+    color:#fff;
+    font-size:14px;
+    text-align:center;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .3s,transform .3s;
+    z-index:50;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  /* ---------- celebration ---------- */
+  .celebration{
+    position:fixed;
+    inset:0;
+    z-index:60;
+    padding:20px;
+    display:grid;
+    place-items:center;
+    background:rgba(11,53,80,.45);
+    backdrop-filter:blur(4px);
+  }
+  .celebration[hidden]{display:none}
+
+  #confetti{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+  }
+
+  .celebration-card{
+    position:relative;
+    width:100%;
+    max-width:320px;
+    padding:32px 26px;
+    text-align:center;
+    background:#fff;
+    border-radius:24px;
+    box-shadow:0 24px 60px rgba(0,0,0,.3);
+    animation:pop .35s cubic-bezier(.2,1.3,.5,1);
+  }
+  @keyframes pop{
+    from{transform:scale(.85);opacity:0}
+    to{transform:scale(1);opacity:1}
+  }
+  .celebration-card .big{font-size:52px;line-height:1}
+  .celebration-card h2{margin:12px 0 6px;font-size:22px}
+  .celebration-card p{margin:0 0 20px;color:var(--muted);font-size:14px;line-height:1.5}
+
+  /* ---------- reduce motion ---------- */
+  @media (prefers-reduced-motion: reduce){
+    *{
+      animation-duration:.001ms !important;
+      animation-iteration-count:1 !important;
+      transition-duration:.001ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<main class="app">
+
+  <header class="head">
+    <h1>💧 Hydrate</h1>
+    <p>Small sips, big difference.</p>
+  </header>
+
+  <!-- TRACKER -->
+  <section class="card">
+    <div class="ring-wrap">
+      <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+        <circle class="ring-bg" cx="60" cy="60" r="52"></circle>
+        <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="52"></circle>
+      </svg>
+      <div class="ring-label">
+        <span id="count">0</span>
+        <small>of <span id="goal">8</span> glasses</small>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="removeBtn" class="btn-round" aria-label="Remove one glass">−</button>
+      <button id="addBtn" class="btn-round primary" aria-label="Add one glass">+</button>
+    </div>
+
+    <p class="hint" id="hint">8 more to go today.</p>
+    <button id="resetBtn" class="link-btn">Reset today</button>
+  </section>
+
+  <!-- AGE → GOAL -->
+  <section class="card">
+    <h2>How much do you need?</h2>
+    <p class="muted">
+      Enter your age and we'll suggest a daily goal, based on general guidelines
+      for a 250&nbsp;ml glass.
+    </p>
+    <div class="calc-row">
+      <input id="ageInput" type="number" min="1" max="120" placeholder="Your age" inputmode="numeric">
+      <button id="calcBtn" class="btn">Calculate</button>
+    </div>
+    <p id="result" class="result"></p>
+  </section>
+
+  <!-- REMINDERS -->
+  <section class="card">
+    <h2>Reminders</h2>
+    <label class="reminder-row">
+      <span>Remind me every</span>
+      <select id="reminderSelect">
+        <option value="0">Off</option>
+        <option value="1800000">30 minutes</option>
+        <option value="3600000">1 hour</option>
+        <option value="7200000">2 hours</option>
+      </select>
+    </label>
+    <p class="muted small">Reminders only fire while this tab is open.</p>
+  </section>
+
+</main>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<div id="celebration" class="celebration" hidden>
+  <canvas id="confetti"></canvas>
+  <div class="celebration-card">
+    <div class="big">🎉</div>
+    <h2>Goal reached!</h2>
+    <p>You drank <span id="celCount">8</span> glasses today. Nicely hydrated.</p>
+    <button id="closeCel" class="btn">Nice</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var CIRC = 2 * Math.PI * 52;                 // circumference of the ring
+  var STORAGE_KEY = 'hydrate.v1';
+  var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var ui = {
+    ringFill:  document.getElementById('ringFill'),
+    count:     document.getElementById('count'),
+    goal:      document.getElementById('goal'),
+    hint:      document.getElementById('hint'),
+    add:       document.getElementById('addBtn'),
+    remove:    document.getElementById('removeBtn'),
+    reset:     document.getElementById('resetBtn'),
+    age:       document.getElementById('ageInput'),
+    calc:      document.getElementById('calcBtn'),
+    result:    document.getElementById('result'),
+    reminder:  document.getElementById('reminderSelect'),
+    toast:     document.getElementById('toast'),
+    overlay:   document.getElementById('celebration'),
+    celCount:  document.getElementById('celCount'),
+    closeCel:  document.getElementById('closeCel'),
+    confetti:  document.getElementById('confetti')
+  };
+
+  /* ---------------------------------------------------------
+     State
+  --------------------------------------------------------- */
+  function todayKey() {
+    var d = new Date();
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  }
+
+  var DEFAULTS = {
+    date: todayKey(),
+    count: 0,
+    goal: 8,
+    celebrated: false,
+    age: null,
+    reminderMs: 0
+  };
+
+  var state = loadState();
+
+  function loadState() {
+    var s;
+    try {
+      s = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    } catch (e) { s = null; }
+
+    if (!s || typeof s !== 'object') return Object.assign({}, DEFAULTS);
+
+    s = Object.assign({}, DEFAULTS, s);
+
+    // New day → start over
+    if (s.date !== todayKey()) {
+      s.date = todayKey();
+      s.count = 0;
+      s.celebrated = false;
+    }
+    return s;
+  }
+
+  function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  /* ---------------------------------------------------------
+     Rendering
+  --------------------------------------------------------- */
+  function render() {
+    var goal = Math.max(1, state.goal);
+    var pct  = Math.min(state.count / goal, 1);
+
+    ui.ringFill.style.strokeDashoffset = String(CIRC * (1 - pct));
+    ui.count.textContent = state.count;
+    ui.goal.textContent  = goal;
+    ui.remove.disabled   = state.count <= 0;
+
+    if (state.count >= goal) {
+      ui.hint.textContent = 'Goal reached — keep it up! 🎉';
+    } else {
+      var left = goal - state.count;
+      ui.hint.textContent = left + ' more to go today.';
+    }
+  }
+
+  /* ---------------------------------------------------------
+     Counter
+  --------------------------------------------------------- */
+  ui.add.addEventListener('click', function () {
+    state.count++;
+    saveState();
+    render();
+    checkGoal();
+  });
+
+  ui.remove.addEventListener('click', function () {
+    if (state.count === 0) return;
+    state.count--;
+    saveState();
+    render();
+  });
+
+  ui.reset.addEventListener('click', function () {
+    state.count = 0;
+    state.celebrated = false;
+    saveState();
+    render();
+    showToast('Counter reset for today.');
+  });
+
+  function checkGoal() {
+    if (state.count >= state.goal && !state.celebrated) {
+      state.celebrated = true;
+      saveState();
+      celebrate();
+    }
+  }
+
+  /* ---------------------------------------------------------
+     Age → recommended goal
+  --------------------------------------------------------- */
+  function recommend(age) {
+    if (age < 4)   return { glasses: 4, note: 'Toddlers need roughly 1 litre a day, including what comes from food.' };
+    if (age <= 8)  return { glasses: 5, note: 'Children aged 4–8 need about 1.2 litres a day.' };
+    if (age <= 13) return { glasses: 7, note: 'Ages 9–13 need about 1.7 litres a day.' };
+    if (age <= 18) return { glasses: 9, note: 'Teenagers need about 2.2 litres a day.' };
+    if (age <= 64) return { glasses: 8, note: 'Adults need about 2 litres a day.' };
+    return { glasses: 7, note: 'Older adults need about 1.7 litres a day.' };
+  }
+
+  function calculateGoal() {
+    var age = Number(ui.age.value);
+
+    if (!isFinite(age) || age < 1 || age > 120) {
+      ui.result.classList.add('warn');
+      ui.result.textContent = 'Please enter an age between 1 and 120.';
+      return;
+    }
+
+    var rec = recommend(age);
+
+    ui.result.classList.remove('warn');
+    state.age  = age;
+    state.goal = rec.glasses;
+    saveState();
+    render();
+
+    ui.result.innerHTML =
+      'At <strong>' + age + '</strong>, aim for about <strong>' + rec.glasses +
+      ' glasses</strong> (' + (rec.glasses * 250) + '&nbsp;ml) a day. ' + rec.note;
+
+    checkGoal();
+  }
+
+  ui.calc.addEventListener('click', calculateGoal);
+  ui.age.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') calculateGoal();
+  });
+
+  /* ---------------------------------------------------------
+     Reminders
+  --------------------------------------------------------- */
+  var timer = null;
+
+  function startReminders() {
+    clearInterval(timer);
+    timer = null;
+
+    var ms = Number(state.reminderMs) || 0;
+    if (!ms) return;
+
+    timer = setInterval(fireReminder, ms);
+  }
+
+  function fireReminder() {
+    var left = state.goal - state.count;
+    var body = left > 0
+      ? left + (left === 1 ? ' glass' : ' glasses') + ' to go today.'
+      : 'Goal reached — well done!';
+
+    notify('Time for some water 💧', body);
+  }
+
+  function notify(title, body) {
+    if ('Notification' in window &&
+        Notification.permission === 'granted' &&
+        document.hidden) {
+      try { new Notification(title, { body: body }); return; } catch (e) {}
+    }
+    showToast(title + ' ' + body);
+  }
+
+  ui.reminder.addEventListener('change', function () {
+    state.reminderMs = Number(ui.reminder.value) || 0;
+    saveState();
+
+    if (state.reminderMs &&
+        'Notification' in window &&
+        Notification.permission === 'default') {
+      Notification.requestPermission().then(startReminders, startReminders);
+    } else {
+      startReminders();
+    }
+
+    if (state.reminderMs) showToast('Reminders on — keep this tab open.');
+  });
+
+  /* ---------------------------------------------------------
+     Toast
+  --------------------------------------------------------- */
+  var toastTimer = null;
+
+  function showToast(message) {
+    ui.toast.textContent = message;
+    ui.toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      ui.toast.classList.remove('show');
+    }, 4000);
+  }
+
+  /* ---------------------------------------------------------
+     Celebration + confetti
+  --------------------------------------------------------- */
+  function celebrate() {
+    ui.celCount.textContent = state.count;
+    ui.overlay.hidden = false;
+    launchConfetti();
+  }
+
+  ui.closeCel.addEventListener('click', function () {
+    ui.overlay.hidden = true;
+  });
+
+  ui.overlay.addEventListener('click', function (e) {
+    if (e.target === ui.overlay) ui.overlay.hidden = true;
+  });
+
+  function launchConfetti() {
+    if (REDUCED) return;
+
+    var canvas = ui.confetti;
+    var ctx = canvas.getContext('2d');
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = canvas.clientWidth;
+    var h = canvas.clientHeight;
+
+    canvas.width  = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    var colors = ['#4fc3f7', '#29b6f6', '#81d4fa', '#0288d1', '#b3e5fc', '#ffd54f'];
+    var pieces = [];
+
+    for (var i = 0; i < 140; i++) {
+      pieces.push({
+        x: Math.random() * w,
+        y: Math.random() * -h,
+        w: 6 + Math.random() * 6,
+        h: 8 + Math.random() * 8,
+        color: colors[(Math.random() * colors.length) | 0],
+        vx: -1 + Math.random() * 2,
+        vy: 1.5 + Math.random() * 3,
+        rot: Math.random() * Math.PI * 2,
+        vr: -0.12 + Math.random() * 0.24
+      });
+    }
+
+    var start = performance.now();
+    var DURATION = 3200;
+
+    function frame(now) {
+      var elapsed = now - start;
+      ctx.clearRect(0, 0, w, h);
+
+      for (var i = 0; i < pieces.length; i++) {
+        var p = pieces[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+
+        if (p.y > h + 24) {
+          p.y = -24;
+          p.x = Math.random() * w;
+        }
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      }
+
+      if (elapsed < DURATION) {
+        requestAnimationFrame(frame);
+      } else {
+        ctx.clearRect(0, 0, w, h);
+      }
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------------------------------------------------------
+     Day rollover while the tab stays open
+  --------------------------------------------------------- */
+  setInterval(function () {
+    if (state.date !== todayKey()) {
+      state.date = todayKey();
+      state.count = 0;
+      state.celebrated = false;
+      saveState();
+      render();
+    }
+  }, 60000);
+
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) render();
+  });
+
+  /* ---------------------------------------------------------
+     Init
+  --------------------------------------------------------- */
+  ui.reminder.value = String(state.reminderMs);
+  if (state.age) ui.age.value = state.age;
+
+  render();
+  startReminders();
+
+})();
+</script>
+</body>
+</html>
