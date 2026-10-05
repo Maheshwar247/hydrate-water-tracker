@@ -2,12 +2,12 @@
 
 A minimal water intake tracker. Log your glasses through the day, set gentle reminders, and get a small celebration when you reach your goal of 8 glasses.
 
-**[▶ Live demo](https://YOUR-USERNAME.github.io/hydrate-water-tracker/)**
+**[▶ Live demo](https://Maheshwar247.github.io/hydrate-water-tracker/)**
 
 <p align="center">
-  <img src="screenshots/tracker.png" width="250" alt="Tracker at 0 glasses">
-  <img src="screenshots/progress.png" width="250" alt="Progress ring at 5 of 8 glasses with reminders on">
-  <img src="screenshots/celebration.png" width="250" alt="Celebration screen with confetti">
+  <img src="tracker.png" width="250" alt="Tracker at 0 glasses">
+  <img src="progress.png" width="250" alt="Progress ring at 5 of 8 glasses with reminders on">
+  <img src="celebration.png" width="250" alt="Celebration screen with confetti">
 </p>
 
 ## Features
