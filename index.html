@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hydrate - Drink Water Tracker</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💧</text></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container" id="mainContent">
+    <!-- Header -->
+    <header class="header">
+      <h1>💧 Hydrate</h1>
+    </header>
+
+    <!-- Daily counter display -->
+    <section class="counter-card">
+      <div class="glasses-label">Your intake</div>
+      <div class="counter" id="counter" aria-live="polite">0 / 8 glasses</div>
+
+      <!-- Circular progress ring (SVG) -->
+      <svg class="progress-ring" viewBox="0 0 160 160" aria-hidden="true">
+        <circle class="ring-bg" r="70" cx="80" cy="80" fill="none" stroke="#f0f0f0" stroke-width="8"/>
+        <circle class="ring-filled" id="ringFilled" r="70" cx="80" cy="80" fill="none" stroke="#3b82f6" stroke-width="8" stroke-linecap="round" transform="rotate(-90 80 80)"/>
+      </svg>
+
+      <div class="target">Goal: 8 glasses</div>
+    </section>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="btn btn-add" id="addBtn">+ Add glass</button>
+      <button class="btn btn-remove" id="removeBtn">- Remove</button>
+    </div>
+
+    <!-- Date note -->
+    <p class="date-note">Today's count resets daily</p>
+
+    <!-- Reminder settings panel -->
+    <aside class="settings-panel">
+      <h2>Reminder</h2>
+      <label class="toggle-container">
+        <input type="checkbox" id="reminderToggle">
+        <span class="toggle-slider"></span>
+        <span class="toggle-label">Enable reminders</span>
+      </label>
+      <div class="interval-selector">
+        <span>Interval:</span>
+        <select id="intervalSelect">
+          <option value="30">30 min</option>
+          <option value="60" selected>1 hour</option>
+          <option value="120">2 hours</option>
+        </select>
+      </div>
+      <p class="toggle-note">Reminders work while this tab is open.</p>
+    </aside>
+  </main>
+
+  <!-- Celebration view (hidden by default) -->
+  <div class="celebration-view" id="celebration" role="dialog" aria-label="Goal complete">
+    <canvas id="confetti"></canvas>
+    <h1>🎉 Goal complete!</h1>
+    <p>You've reached 8 glasses today! Amazing job, you're staying hydrated.</p>
+    <button class="btn btn-keep" id="keepBtn">Keep going</button>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast">Time to drink a glass of water</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
